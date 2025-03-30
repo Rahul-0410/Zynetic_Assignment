@@ -45,7 +45,7 @@ npm start
 ## State Management & Local Storage  
 
 ### useState:  
-- Used to manage the state of the **search input, weather data, and recent searches**.  
+- Used to manage the state of the **search input, weather data, recent searches and theme**.  
 
 #### Example states:  
 - `data` → Stores the fetched weather details.  
@@ -58,7 +58,7 @@ npm start
 ### useEffect:  
 - Used to **fetch weather data** when a city is searched or any change in city.  
 - Used to **load recent searches from localStorage** when the page is reloaded or visited again.  
-- Triggers updates when `city` or `history is updated` changes.  
+- Triggers updates when `city` or `history` updates.  
 
 ---
 
