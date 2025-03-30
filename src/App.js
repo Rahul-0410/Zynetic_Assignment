@@ -28,22 +28,28 @@ function App() {
   //add cities and store upto 5 of them
   function handleHistory(city) {
     if (!history.includes(city)) {
+      //new cities are added at the front
       const updatedHistory = [city, ...history].slice(0, 5);
       setHistory(updatedHistory);
       localStorage.setItem("cities", JSON.stringify(updatedHistory));
     }
   }
 
+  //useed to fetch the weather data when the selected city is chnages
+
   useEffect(() => {
+    //fecthed both day  data and forcast data
     const fetchData = async (city) => {
       setLoading(true);
       setError(null);
       try {
+        //feches data for the day
         const d = await getData(city);
         setData(d);
         if (d && d.name) {
           handleHistory(d.name);
           try {
+            // fetches data for the next 5 days
             const forecast = await getForecastData(d.name);
             setForecastData(forecast);
           } catch (err) {
@@ -58,6 +64,8 @@ function App() {
       }
     };
 
+    // brigs the weather data of user's city via geolocation
+    //if no city is provided
     const getcity = async () => {
       try {
         const response = await getCity();
@@ -71,14 +79,17 @@ function App() {
         setError("Could not detect your location");
       }
     };
-
+//if we have the city fetch its data otherwise try to get the city using location
     city ? fetchData(city) : getcity();
   }, [city]);
+
+  //this fecth is used for getting the data for all the cities in search history
 
   useEffect(() => {
     const fetchHistoryData = async () => {
       setHistoryData([]);
       try {
+      //we use promise.all to make parallel requests for all the cities in history
         const weatherData = await Promise.all(
           history.map(async (city) => {
             try {
@@ -89,6 +100,7 @@ function App() {
             }
           })
         );
+        // remove any city data which is not there
         setHistoryData(weatherData.filter(data => data !== null));
       } catch (error) {
         console.error("Failed to fetch history data:", error);
@@ -100,6 +112,7 @@ function App() {
     }
   }, [history]);
 
+  //we use this to get the weather icon based on the description
   const getWeatherIcon = (description) => {
     if (description.includes("clear")) return weatherIcons.clear;
     if (description.includes("cloud")) return weatherIcons.clouds;
@@ -116,12 +129,14 @@ function App() {
     }
   };
 
+  //we refresh by setting the setcity which in turn calls the useEffect
   const handleRefresh = () => {
     if (city) {
       setCity(city);
     }
   };
 
+  // if user want's to get the weather data based on their location
   const handleGetUserLocation = () => {
     setLocationLoading(true);
     setError(null);
@@ -157,9 +172,9 @@ function App() {
           setLocationLoading(false);
         },
         {
-          enableHighAccuracy: true,
-          timeout: 5000,
-          maximumAge: 0
+          enableHighAccuracy: true, // requents the most accurate location
+          timeout: 5000, // allows 5 sec for location
+          maximumAge: 0 // always gets fresh location data
         }
       );
     } else {
@@ -168,7 +183,8 @@ function App() {
     }
   };
 
-  // Group forecast data by day
+  // Group forecast data by day to show max temp
+  //we exclude the current day's remaining hours
   const groupForecastByDay = (forecastData) => {
     if (!forecastData || !forecastData.list) return [];
     
@@ -179,7 +195,7 @@ function App() {
       const date = new Date(item.dt * 1000);
       const day = date.setHours(0, 0, 0, 0);
       
-      // Skip today's remaining hours 
+      // Skip today's remaining hours  as we are already showing today's weather
       if (day === today) return;
       
       if (!dailyForecasts[day] || (dailyForecasts[day].main.temp_max < item.main.temp_max)) {
@@ -187,9 +203,11 @@ function App() {
       }
     });
     
+    // convert the object into an array
     return Object.values(dailyForecasts).slice(0, 5);
   };
 
+  //we use it to display th day of the week
   const formatDay = (timestamp) => {
     const date = new Date(timestamp * 1000);
     return date.toLocaleDateString("en-US", { weekday: 'short' });
@@ -236,6 +254,7 @@ function App() {
         </div>
       ) : data ? (
         <div className="weatherContainer">
+          {/* current weather card for today's day is shown here  */}
           <div className="currentWeather">
             <div className="weatherCard">
               <h2>{data.name}, {data.sys.country}</h2>
@@ -268,6 +287,7 @@ function App() {
             </div>
           </div>
 
+          {/* forcasr for 5 day shown here only if it is there  */}
           {forecastData && (
             <div className="forecast">
               <h3>5-Day Forecast</h3>
