@@ -2,6 +2,7 @@ import './App.css';
 import { useState, useEffect } from 'react';
 import { getData, getCity, getForecastData } from './api';
 
+// Icons for different weather conditions
 const weatherIcons = {
   clear: "https://cdn-icons-png.flaticon.com/512/869/869869.png",
   clouds: "https://cdn-icons-png.flaticon.com/512/1163/1163624.png",
@@ -12,16 +13,19 @@ const weatherIcons = {
 
 function App() {
   const [data, setData] = useState(null);
+
   const [forecastData, setForecastData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState("dark");
   const [city, setCity] = useState("");
   const [inputCity, setInputCity] = useState("");
+  //get city searched for from local storage
   const [history, setHistory] = useState(() => JSON.parse(localStorage.getItem("cities")) || []);
   const [historyData, setHistoryData] = useState([]);
   const [error, setError] = useState(null);
   const [locationLoading, setLocationLoading] = useState(false);
 
+  //add cities and store upto 5 of them
   function handleHistory(city) {
     if (!history.includes(city)) {
       const updatedHistory = [city, ...history].slice(0, 5);
@@ -131,7 +135,7 @@ function App() {
             const lon = position.coords.longitude;
             
             const weatherData = await fetch(
-              `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${process.env.REACT_APP_API || process.env.VITE_API_KEY}&units=metric`
+              `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=5855a4f840dbf1e38frdtfyg&units=metric`
             ).then(res => res.json());
             
             if (weatherData.name) {
@@ -175,7 +179,7 @@ function App() {
       const date = new Date(item.dt * 1000);
       const day = date.setHours(0, 0, 0, 0);
       
-      // Skip today's remaining hours
+      // Skip today's remaining hours 
       if (day === today) return;
       
       if (!dailyForecasts[day] || (dailyForecasts[day].main.temp_max < item.main.temp_max)) {
@@ -198,12 +202,12 @@ function App() {
         <button className="theme-toggle" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
           {theme === "dark" ? "🌞 Light Mode" : "🌙 Dark Mode"}
         </button>
-        <button className="refresh-btn" onClick={handleRefresh}>
+        <button className="refresh" onClick={handleRefresh}>
           🔄 Refresh
         </button>
       </div>
 
-      <form className="search-box" onSubmit={handleSubmit}>
+      <form className="search" onSubmit={handleSubmit}>
         <input
           type="text"
           placeholder="Enter city name"
@@ -213,7 +217,7 @@ function App() {
         <button type="submit">Get Weather</button>
         <button 
           type="button" 
-          className="location-btn" 
+          className="location" 
           onClick={handleGetUserLocation}
           disabled={locationLoading}
         >
@@ -227,57 +231,57 @@ function App() {
           <p>Loading weather data...</p>
         </div>
       ) : error ? (
-        <div className="error-message">
+        <div className="error">
           <p>{error}</p>
         </div>
       ) : data ? (
-        <div className="weather-container">
-          <div className="current-weather">
-            <div className="weather-card">
+        <div className="weatherContainer">
+          <div className="currentWeather">
+            <div className="weatherCard">
               <h2>{data.name}, {data.sys.country}</h2>
-              <div className="weather-main">
+              <div className="weatherInfo">
                 <img 
                   src={getWeatherIcon(data.weather[0].description)} 
                   alt="weather icon" 
-                  className="weather-icon" 
+                  className="weatherIcon" 
                 />
-                <div className="temp-container">
-                  <span className="current-temp">{Math.round(data.main.temp)}°C</span>
+                <div className="tempContainer">
+                  <span className="currentTemp">{Math.round(data.main.temp)}°C</span>
                   <span className="feels-like">Feels like: {Math.round(data.main.feels_like)}°C</span>
                 </div>
               </div>
-              <p className="weather-description">{data.weather[0].description}</p>
-              <div className="weather-details">
-                <div className="detail-item">
-                  <span className="detail-label">Humidity:</span>
-                  <span className="detail-value">{data.main.humidity}%</span>
+              <p className="weatherDescription">{data.weather[0].description}</p>
+              <div className="weatherDetails">
+                <div className="detail">
+                  <span className=".detailHeading">Humidity:</span>
+                  <span className="detailValue">{data.main.humidity}%</span>
                 </div>
-                <div className="detail-item">
-                  <span className="detail-label">Wind:</span>
-                  <span className="detail-value">{data.wind.speed} km/h</span>
+                <div className="detail">
+                  <span className=".detailHeading">Wind:</span>
+                  <span className="detailValue">{data.wind.speed} km/h</span>
                 </div>
-                <div className="detail-item">
-                  <span className="detail-label">Pressure:</span>
-                  <span className="detail-value">{data.main.pressure} hPa</span>
+                <div className="detail">
+                  <span className=".detailHeading">Pressure:</span>
+                  <span className="detailValue">{data.main.pressure} hPa</span>
                 </div>
               </div>
             </div>
           </div>
 
           {forecastData && (
-            <div className="forecast-section">
+            <div className="forecast">
               <h3>5-Day Forecast</h3>
-              <div className="forecast-container">
+              <div className="forecastContainer">
                 {groupForecastByDay(forecastData).map((forecast, index) => (
-                  <div key={index} className="forecast-card">
+                  <div key={index} className="forecastCard">
                     <h4>{formatDay(forecast.dt)}</h4>
                     <img 
                       src={getWeatherIcon(forecast.weather[0].description)} 
                       alt="forecast icon" 
-                      className="forecast-icon" 
+                      className="forecastIcon" 
                     />
-                    <p className="forecast-temp">{Math.round(forecast.main.temp)}°C</p>
-                    <p className="forecast-desc">{forecast.weather[0].description}</p>
+                    <p className="forecastTemp">{Math.round(forecast.main.temp)}°C</p>
+                    <p className="forecastDesc">{forecast.weather[0].description}</p>
                   </div>
                 ))}
               </div>
@@ -286,22 +290,23 @@ function App() {
         </div>
       ) : null}
 
+{/* displats the history of searched cities */}
       {historyData.length > 0 && (
-        <div className="history-section">
+        <div className="history">
           <h3>Recent Searches</h3>
-          <div className="history-container">
+          <div className="historyContainer">
             {historyData.map((weather, index) => (
-              <div key={index} onClick={() => setCity(weather.name)} className="history-card">
+              <div key={index} onClick={() => setCity(weather.name)} className="historyCard">
                 <h4>{weather.name}, {weather.sys.country}</h4>
-                <div className="history-content">
+                <div className="historyContent">
                   <img 
                     src={getWeatherIcon(weather.weather[0].description)} 
                     alt="weather" 
-                    className="history-icon" 
+                    className="historyIcon" 
                   />
                   <div>
-                    <p className="history-temp">{Math.round(weather.main.temp)}°C</p>
-                    <p className="history-desc">{weather.weather[0].description}</p>
+                    <p className="historyTemp">{Math.round(weather.main.temp)}°C</p>
+                    <p className="historyDesc">{weather.weather[0].description}</p>
                   </div>
                 </div>
               </div>
